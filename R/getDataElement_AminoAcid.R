@@ -1,6 +1,4 @@
 
-# this function should be fixed (remove unnecessary deps, like tidyverse) and by using roxygen3
-# documentation
 
 getDE <- function(file = "/path/file",      # dataElement path to file
                   samplePrefix = "OIH",     # prefix used by samples in sampleID/file list
