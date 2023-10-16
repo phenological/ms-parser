@@ -152,22 +152,32 @@ parseMS_AA <- function(file, options) {
   rawData <- cbind("sampleID" = code, rawData)
 
   # cleaning sampleType
-  sampleType <- as.factor(rawData$SampleType)
-  cat(bold(blue(levels(sampleType)) %+% blue(" sample type was found")), fill = TRUE)
-  if ("sampleTypes" %in% names(options)) {
-    cat(red(options$sampleType), " using these from option\n")
-    levels(sampleType) <- options$sampleTypes
-  } else {
-    levels(sampleType) <- c("BLANK", "CALIBRANT", "QUALITYCONTROL", "SAMPLE")
-  }
-  rawData$SampleType <- as.character(sampleType)
+  sampleType<-factor(
+    substr(rawData$sampleID, 1, 3),
+    levels = c("Dou", "CAL", "PQC", "QC0", "LTR", "SLT"),
+    labels = c("blank", "calibration", "pqc", "qc", "ltr", "sltr"),
+    exclude = FALSE
+  )
+  levels(sampleType) <- c(levels(sampleType), 'sample') 
+  sampleType[is.na(sampleType)] <- 'sample'
 
-  fi <- which(colnames(rawData) == "SampleType")
-  colnames(rawData)[fi] <- "sampleType"
+  rawData$sampleType <- sampleType
 
-  # cleaning LTR
-  fi <- grepl("PLA|URI|SER|LTR", rawData$sampleID)
-  rawData$sampleType[fi] <- "ltr"
+  # cat(bold(blue(levels(sampleType)) %+% blue(" sample type was found")), fill = TRUE)
+  # if ("sampleTypes" %in% names(options)) {
+  #   cat(red(options$sampleType), " using these from option\n")
+  #   levels(sampleType) <- options$sampleTypes
+  # } else {
+  #   levels(sampleType) <- c("BLANK", "CALIBRANT", "QUALITYCONTROL", "SAMPLE")
+  # }
+  # rawData$SampleType <- as.character(sampleType)
+  # 
+  # fi <- which(colnames(rawData) == "SampleType")
+  # colnames(rawData)[fi] <- "sampleType"
+  # 
+  # # cleaning LTR
+  # fi <- grepl("PLA|URI|SER|LTR", rawData$sampleID)
+  # rawData$sampleType[fi] <- "ltr"
 
   # concatenating metadata with the same order as the data
   # we use analysisName that is unique and contain plate information
