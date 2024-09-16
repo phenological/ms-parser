@@ -1,9 +1,9 @@
 #' extract targeted MS data from task export xml file
 #'
 #' @param path - the path to the expName folder
-#' @param options list of options
+#' @param optns list of optns
 #' \itemize{
-#'    \item codePosition - position of the code in the file name
+#'    \item codePosition - position of the code in the file name. Default is 8.
 #'    \item columnList - list of columns to be selected
 #' }
 #' @return a dataElement
@@ -11,18 +11,21 @@
 #' @export
 #' @importFrom xml2 read_xml xml_attr xml_find_all xml_attrs
 #' @importFrom dplyr %>%
-parseTRY <- function(path, options = list()){
+readTRY <- function(path, optns = list()){
+  
   id <- name <- createdate <- createtime <- type <- desc <- stdconc <- NULL
   vial <- inletmethodname <- msmethodname <- tunemethodname <- instrument <- NULL
+  
   # get sampleID position in title
-  if ("codePosition" %in% names(options)) {
-    codePosition <- options$codePosition
+  if ("codePosition" %in% names(optns)) {
+    codePosition <- optns$codePosition
   } else {
     codePosition <- 8
   }
+  
   # get list of metabolites if not default
-  if ("columnsList" %in% names(options)) {
-    columnsList <- options$columnsList
+  if ("columnsList" %in% names(optns)) {
+    columnsList <- optns$columnsList
   } else {
     columnsList <- c("tryptophan",
                      "3-hydroxykynurenine",
@@ -62,6 +65,7 @@ parseTRY <- function(path, options = list()){
   }
 
   xml <- read_xml(path)
+  
   # retrieving sample information from SAMPLELISTDATA
   sample <- xml_children(xml_find_all(xml, "//GROUPDATA/GROUP/SAMPLELISTDATA"))
   sample <- data.frame(do.call("rbind", lapply(xml_attrs(sample), function(x) unlist(x))))
