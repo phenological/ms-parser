@@ -7,7 +7,7 @@
 #'    \item codePosition - position of the code in the file name. Default is 7
 #'    \item columnList - list of columns to be selected
 #' }
-#' @return a dataElement
+#' @return rawData read from TSV file
 #'
 #' @export
 #' @import utils

@@ -22,7 +22,7 @@ readAA(file, optns = list())
 }}
 }
 \value{
-a dataElement
+rawData read from TSV file
 }
 \description{
 Read amino acid data from tsv's
