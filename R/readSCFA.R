@@ -17,13 +17,6 @@ readSCFA <- function(path, optns = list()) {
   id <- name <- createdate <- createtime <- type <- desc <- stdconc <- NULL
   vial <- inletmethodname <- msmethodname <- tunemethodname <- instrument <- NULL
   
-  # get sampleID position in title
-  if ("codePosition" %in% names(optns)) {
-    codePosition <- optns$codePosition
-  } else {
-    codePosition <- 7
-  }
-  
   # get list of metabolites if not default
   if ("columnsList" %in% names(optns)) {
     columnsList <- optns$columnsList
@@ -92,53 +85,41 @@ readSCFA <- function(path, optns = list()) {
   # checking for missing metabolites
   missing <- setdiff(columnsList, compoundNames)
   if (length(missing) > 0) {
-    msg <- paste("fusion::getTryXML >> Missing metabolites:",
+    msg <- paste(" >> Missing metabolites:",
                  missing,
                  "\n")
     message(crayon::red(msg))
   }
   ## nrow(COMPOUND) must be a ntuple of the number of compounds
   if (!nrow(COMPOUND) / nrow(sampleInfo) == nrow(COMPOUND) %/% nrow(sampleInfo)) {
-    cat(crayon::red("fusion::getSCFA >> dimension problems"))
+    cat(crayon::red(" >> dimension problems"))
   } else {
     N <- nrow(COMPOUND) / nrow(sampleInfo)
   }
   
   ## all samples are expected to have the same measurements
   if (!sum(unname(table(COMPOUND$sampleid)) == N) == nrow(sampleInfo)) {
-    cat(crayon::red("fusion::getSCFA >> dimension problems with compounds"))
+    cat(crayon::red(" >> dimension problems with compounds"))
   }
   
   # matching sample IDs from SAMPLELISTDATA
   idx <- match(COMPOUND$sampleid, sampleInfo$id)
   if (!identical(order(unique(idx)), unique(idx))) {
-    cat(crayon::red("fusion::getSCFA >> sampleInfo not in the same order as data"))
+    cat(crayon::red(" >> sampleInfo not in the same order as data"))
   }
   
   # creating proper columns for dataElement
-  code <- sampleInfo$name[idx]
-  sampleID <- gsub(" ", "", makeUnique(sapply(
-    strsplit(code, "_"), "[", codePosition
-  ), fromFirst = TRUE))
+  COMPOUND<-data.frame(projectName = sapply(strsplit(sampleInfo$name, "_"), "[", 1),
+                       cohortName = sapply(strsplit(sampleInfo$name, "_"), "[", 2),
+                       sampleMatrixType = sapply(strsplit(sampleInfo$name, "_"), "[", 3),
+                       runName = sapply(strsplit(sampleInfo$name, "_"), "[", 5),
+                       plateID = sapply(strsplit(sampleInfo$name, "_"), "[", 6),
+                       sampleID = make.unique(sapply(strsplit(sampleInfo$desc, "_"), "[", 1), sep = "#"),
+                       sourceID = sapply(strsplit(sampleInfo$desc, "_"), "[", 2),
+                       sampleType = ifelse(!substr(sampleInfo$desc,1,3) %in% c("BLK","CAL","LTR","SLT","VLT","SB","QC0","PQC","CON","CHK"),"Sample",substr(sampleInfo$desc,1,3)),
+                       expname = basename(path),
+                       COMPOUND)
   
-  sourceID <- gsub(" ", "", makeUnique(sapply(
-    strsplit(code, "_"), "[", codePosition + 1
-  ), fromFirst = TRUE))
-  
-  sampleType <- factor(
-    sampleInfo$type[idx],
-    levels = c("Analyte", "Blank", "ltr", "QC", "Standard"),
-    labels = c("analyte", "blank", "ltr", "qc", "standard")
-  )
-  # creating LTR type
-  idx <- grep("LTR", sampleID)
-  sampleType[idx] <- "ltr"
-  
-  # adding required fields (columns)
-  COMPOUND$sampleID <- sampleID
-  COMPOUND$sourceID <- sourceID
-  COMPOUND$sampleType <- sampleType
-  COMPOUND$expname <- basename(path)
   
   # casting the data
   # (as.numeric is mandatory otherwise dcast will order id in alphabetical order)
@@ -155,7 +136,7 @@ readSCFA <- function(path, optns = list()) {
     .Data <- .Data[, -1]
   }
   
-  obsDescr <- split(COMPOUND, 1:N) # remove the first 3 column (id,sampleid,groupid)
+  obsDescr <- split(COMPOUND, 1:N) 
   #checking that description matches data columns
   if (!identical(unname(sapply(obsDescr, function(x)
     unique(x$id))), colnames(.Data))) {
@@ -173,14 +154,11 @@ readSCFA <- function(path, optns = list()) {
   colnames(.Data) <- varName
   rownames(.Data) <- sampleInfo$name
   
-  # removing first 3 columns from obsDescr
-  obsDescr<-lapply(obsDescr, function(x)
-    obsDescr <- x[, -c(1, 2, 3)])
+  # removing "id", "sampleid", "groupid" columns from obsDescr
+  obsDescr<-lapply(obsDescr, function(x){
+    obsDescr <- x[, !colnames(x) %in% c("id", "sampleid", "groupid")]
+    return(x)})
   
-  obsDescr <- lapply(obsDescr, function(x) {
-    x[,"sampleID"] <- make.unique(gsub("\\#.*", "", x[,"sampleID"]), sep = "#")
-    return(x)
-  })
   
   # creating dataElement
   da <- new(
@@ -193,33 +171,5 @@ readSCFA <- function(path, optns = list()) {
   )
   return(da)
 }
-# xml_name(xml)
-# xml_attrs(xml)
-# xml_name(xml_children(xml))
-# xml_name(xml_children(xml_children(xml)[[3]]))
-# xml_name(xml_children(xml_children(xml_children(xml)[[3]])))
-# xml_name(xml_children(xml_children(xml_children(xml)[[3]]))[[1]])
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[3]]))
-#
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))[[1]])
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))[[1]]))
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))[[1]])[[1]]))
-#
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[3]])))
-#
-# response <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/RESPONSE"))
-# RESPONSE <- data.frame(do.call("rbind", lapply(response, function(x) unlist(x))))
-# curve <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE"))
-# CURVE <- data.frame(do.call("rbind", lapply(curve, function(x) unlist(x))))
-# calcurve <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/CALIBRATIONCURVE"))
-# CALCURVE <- data.frame(do.call("rbind", lapply(calcurve, function(x) unlist(x))))
-# correlation <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/CORRELATION"))
-# CORRELATION <- data.frame(do.call("rbind", lapply(correlation, function(x) unlist(x))))
-# determination <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/DETERMINATION"))
-# DETERMINATION <- data.frame(do.call("rbind", lapply(determination, function(x) unlist(x))))
-# responsefactor <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/RESPONSEFACTOR"))
-# RESPONSEFACTOR <- data.frame(do.call("rbind", lapply(responsefactor, function(x) unlist(x))))
-
 
 

@@ -2,6 +2,7 @@
 
 export(parseTargetedMS)
 export(readAA)
+export(readSCFA)
 export(readTRY)
 export(readXML)
 import(crayon)
