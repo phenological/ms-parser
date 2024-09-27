@@ -3,7 +3,6 @@
 #' @param path - the path to the expName folder
 #' @param optns list of optns
 #' \itemize{
-#'    \item codePosition - position of the code in the file name. Default is 7.
 #'    \item columnList - list of columns to be selected
 #' }
 #' @return a dataElement

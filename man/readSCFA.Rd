@@ -13,7 +13,6 @@ readSCFA(path, optns = list())
 
 \item{optns}{list of optns
 \itemize{
-\item codePosition - position of the code in the file name. Default is 7.
 \item columnList - list of columns to be selected
 }}
 }
