@@ -7,14 +7,14 @@ parsers for MS data
 |:--:|:--:|:--:|:--:|
 |Check|BA, SCFA| Matrix-free solution of the standard (e.g., 17 BA) set to a certain concentration (e.g., 50 nM). This is used to check the system performance. Remove from any analysis||
 |Condition|BA|LTRs injected at the beginning of the run to stabilise the column before the study sample begins. The value is often not stable. Remove from Analysis and also remove from LTR check||
-|SB||||
+|SB|SCFA|Single blank (blank that has undergone sample preparation)||
 |Blank||||
-|Calibration||||
+|Calibration||prepared from parent liquid solution of each assay metabolites||
 |LTR||||
 |SLTR||||
 |VLTR||||
-|QC||||
-|PQC||||
+|QC||Quality check solution (prepared from parent liquid solution of each assay metabolites)||
+|PQC||Pooled quality check sample (pooled from samples taken from unhealthy volunteers)||
 
 ## Assays:
 
@@ -58,5 +58,27 @@ parsers for MS data
 
 ### Lipids
 
+## plate Layout
 
+### 48 glass vials rack layout:
+||1|2|3|4|5|6|7|8|
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|A|Sample|Sample|Sample|Sample|Sample|Sample|SB|QC2|
+|B|Sample|Sample|Sample|Sample|Sample|Sample|Cal5|QC1|
+|C|Sample|Sample|Sample|Sample|Sample|Sample|Cal4|PQC1|
+|D|Sample|Sample|Sample|Sample|Sample|Sample|Cal3|PQC2|
+|E|Sample|Sample|Sample|Sample|Sample|Sample|Cal2|PQC3|
+|F|Sample|Sample|Sample|Sample|Sample|Sample|Cal1|PQC4|
+
+### 96 well plate layout:
+||1|2|3|4|5|6|7|8|9|10|11|12|
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|A|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|QC1|
+|B|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|QC2|
+|C|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|QC3|
+|D|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|QC4|
+|E|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|LTR|
+|F|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|LTR|
+|G|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|LTR|
+|H|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Sample|Calibration|LTR|
 
