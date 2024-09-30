@@ -14,8 +14,10 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     crayon,
+    data.table,
     dplyr,
     reshape2,
+    utils,
     xml2
 Depends: 
     R (>= 2.10)
