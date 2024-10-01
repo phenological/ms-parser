@@ -13,12 +13,12 @@ readAA(file, optns = list())
 
 \item{optns}{list of options
 \itemize{
-\item codePosition - position of the code in the file name. Default is 7
-\item columnList - list of columns to be selected
+\item codePosition - position of the code in the file name. Default is
+where cal is found in the analysis name.
 }}
 
 \item{codePosition}{\itemize{
-\item position of the code in the file name
+\item position of the code in the file name for sampleIDs.
 }}
 }
 \value{
