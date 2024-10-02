@@ -1,7 +1,6 @@
 #' Read amino acid data from tsv's
 #'
 #' @param file - the file path to be imported
-#' @param codePosition - position of the code in the file name for sampleIDs. 
 #' @param optns list of options
 #' \itemize{
 #'    \item codePosition - position of the code in the file name. Default is 
@@ -99,6 +98,8 @@ readAA <- function(file, optns = list()) {
       }
     })
     
+    #clean up the names
+    rawData$sampleID <- cleanNames(rawData$sampleID)
     
     #############No blank sampleTypes#########
     idx <- which(is.na(rawData$sampleType))
@@ -142,9 +143,6 @@ readAA <- function(file, optns = list()) {
     rawData$sampleMatrixType <- ifelse(grepl("PLA", rawData$AnalysisName), "PLA",
                                        ifelse(grepl("URI", rawData$AnalysisName), "URI",
                                               ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
-    
-    #######cleaning LTR and double blank sampleIDs########
-    rawData$sampleID <- gsub("PLASMA|SERUM|URINE|-PLA|-URI|-SER", "", rawData$sampleID)
     
     # recasting to get data
     idx <- which(tolower(names(rawData)) %in% c("sampleid", "quantity", "analysisname", "analytename"))

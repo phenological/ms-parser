@@ -16,10 +16,6 @@ readAA(file, optns = list())
 \item codePosition - position of the code in the file name. Default is
 where cal is found in the analysis name.
 }}
-
-\item{codePosition}{\itemize{
-\item position of the code in the file name for sampleIDs.
-}}
 }
 \value{
 rawData read from TSV file

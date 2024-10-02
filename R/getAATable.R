@@ -12,7 +12,6 @@
 #'  \item{\code{Min Value (ref.)}}{Biologically based minimum value for a compound. Based on regular population.}
 #'  \item{\code{Reference Unit}}{Unit of measurement taken from instrument SOP.}
 #'  \item{\code{Reference Range}}{Reference minimum to reference maximum already in the table.}
-#'  \item{\reference}
 #'  }
 #' @importFrom utils read.delim2
 #' @importFrom data.table setDT
