@@ -78,23 +78,22 @@ readAA <- function(file, optns = list()) {
     }
     
     #############adding sampleID########
-    #double blanks, LTRs, QC and CAL need further individualizing since they are not unique yet
+    #double blanks, LTRs, QC and CAL need further individualizing since they are not unique yet.
     
     rawData$sampleID <- sapply(rawData$AnalysisName, function(name) {
       # Split by "_"
       parts <- strsplit(name, "_")[[1]]
       
-      # Check if "Blank" or "LTR" is in the split parts
+      # Check if "Blank", "LTR", "QC" or "CAL" is in the split parts. this covers sltr, vltr and pqc as is 
       if(any(grep("blank|ltr|qc|cal", tolower(parts)))){
-      # if (any(grepl("Blank|LTR", parts))) {
         
         # Find the position of "Blank" or "LTR" and take the part with the number after it
         idx <- which(grepl("blank|ltr|qc|cal", tolower(parts)))
-        # idx <- which(grepl("Blank|LTR", parts))
+     
         return(paste(parts[idx], parts[idx + 1], sep = "_"))  # Combine "Blank" or "LTR" with the next number
       } else {
         # For all other cases, use the default code extraction
-        return(parts[codePosition])  # Adjust 'codePosition' as needed
+        return(parts[codePosition]) 
       }
     })
     

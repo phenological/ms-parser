@@ -39,12 +39,17 @@ test_that("older AA sample names cleaned properly",{
     }
   })
   
+  length(unique(rawData$sampleID)) == length(unique(cleanNames(rawData$sampleID)))
+  
   names <- unique(rawData$sampleID)
   #clean up the names
   cNames <- cleanNames(names)
   
+  #no space in blank sampleID
+  expect_true(length(grep("SINGLEBLANK", cNames)) >= 1)
+  
   #the sampleIDs are unique
-  expect_true(length(cNames) == length(names))
+  expect_true(length(unique(cNames)) == length(unique(names)))
   
   #LTR is LTR#*
   expect_true(c("LTR#1" %in% cNames))
@@ -98,12 +103,18 @@ test_that("newer AA sample names cleaned properly",{
     }
   })
   
+  expect_true(length(unique(rawData$sampleID)) == length(unique(cleanNames(rawData$sampleID)))) 
+  
+  
   names <- unique(rawData$sampleID)
   #clean up the names
   cNames <- cleanNames(names)
   
   #the sampleIDs are unique
-  expect_true(length(cNames) == length(names))
+  expect_true(length(unique(cNames)) == length(unique(names)))
+  
+  #makes sure SLTR is maintained
+  expect_true(length(grep("SLTR", cNames)) >= 1)
   
   #LTR is LTR#*
   expect_true(c("LTR#1" %in% cNames))
@@ -115,4 +126,5 @@ test_that("newer AA sample names cleaned properly",{
   expect_true(length(grep("QC01", cNames)) >= 1) 
   
 })
+
 
