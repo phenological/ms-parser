@@ -17,6 +17,7 @@ Imports:
     data.table,
     dplyr,
     reshape2,
+    stringr,
     utils,
     xml2
 Depends: 

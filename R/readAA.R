@@ -11,6 +11,7 @@
 #' @export
 #' @import utils
 #' @import crayon
+#' @importFrom stringr str_replace_all
 #' @importFrom reshape2 dcast
 
 readAA <- function(file, optns = list()) {
@@ -45,12 +46,37 @@ readAA <- function(file, optns = list()) {
       codePosition <- grep(pattern = "cal", x = tolower(pos))
     }
     
-    #####number of compounds############
+    #######make sample information columns the same#######
+    colnames(rawData) <- str_replace_all(colnames(rawData), c(";" = "",
+                                                              "Area to height ratio indicates whether this is a real chromatographic peak." = "Area to height ratio"))
+    
+    
+    ######number of compounds############
     compoundList <- unique(rawData$AnalyteName)
     numberOfCompounds <- length(compoundList)
     cat(paste("fusion:",
               numberOfCompounds,
               "compound(s) found\n"))
+    
+    #######make analyte names consistent########
+    #fix "Pheny alanine"
+    rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("Pheny alanine" = "Phenylalanine")) 
+    
+    #fix "4--hydroxyproline"
+    rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("4--hydroxyproline" = "4-hydroxyproline")) 
+    
+    #internal standards only requir [IS] and AccQTag does not need to be present in any names confirmed by MS manager
+    rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("-SIL" = "",
+                                                                  "\\." = "-", 
+                                                                   ".13C.." = "", 
+                                                                   ".AccQTag" = "", 
+                                                                   "15N." = "",
+                                                                   "alpha-" = "alpha ",
+                                                                   "beta-" = "beta ",
+                                                                   "gamma-" = "gamma ",
+                                                                  "," = ""))
+   
+    rawData$AnalyteName <- gsub("([^ ])\\[IS]", "\\1 [IS]", rawData$AnalyteName)
     
     #######number of samples############
     cat(paste("fusion:",
@@ -143,14 +169,14 @@ readAA <- function(file, optns = list()) {
                                        ifelse(grepl("URI", rawData$AnalysisName), "URI",
                                               ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
     
-    # recasting to get data
+    #########data###########
     idx <- which(tolower(names(rawData)) %in% c("sampleid", "quantity", "analysisname", "analytename"))
     
     newData <-
       dcast(rawData[, idx],
             AnalysisName + sampleID ~ AnalyteName, 
             value.var = "Quantity")
-    
+
     aa <- 
     list("data" = newData,
          "meta" = rawData)
