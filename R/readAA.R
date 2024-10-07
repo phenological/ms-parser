@@ -3,8 +3,12 @@
 #' @param file - the file path to be imported
 #' @param optns list of options
 #' \itemize{
-#'    \item codePosition - position of the code in the file name. Default is 
-#'    where cal is found in the analysis name.
+#'    \item codePosition - position of the code in the file name for sampleID. 
+#'    Default is where cal is found in the analysis name.
+#'    \item projectName - the name of the project. For example "covid19". The default
+#'    will take it from the first position in AnalysisName.
+#'    \item cohortName - the name of the cohort. For example "harvardC2". The default 
+#'    will take it from the second position in AnalysisName
 #' }
 #' @return rawData read from TSV file
 #'
@@ -37,12 +41,28 @@ readAA <- function(file, optns = list()) {
               sum(!fi),
               "empty line(s) removed\n"))
     
+    #split up the analsis name for project, cohort and sampleID
+    idx <- grep(pattern = "cal", x = tolower(rawData$AnalysisName))[1]
+    pos <- strsplit(rawData[idx,"AnalysisName"], "_")[[1]]
+    
+    ######projectName######
+    if("projectName" %in% names(optns)){
+      rawData$projectName <- optns$projectName
+    }else{
+      rawData$projectName <- pos[1]
+    }
+    
+    #######cohortName#######
+    if("cohortName" %in% names(optns)){
+      rawData$cohortName <- optns$cohortName
+    }else{
+      rawData$cohortName <- pos[2]
+    }
+    
     ####### get sampleID position in title#######
     if ("codePosition" %in% names(optns)) {
       codePosition <- optns$codePosition
     } else {
-      idx <- grep(pattern = "cal", x = tolower(rawData$AnalysisName))[1]
-      pos <- strsplit(rawData[idx,"AnalysisName"], "_")[[1]]
       codePosition <- grep(pattern = "cal", x = tolower(pos))
     }
     
@@ -170,16 +190,16 @@ readAA <- function(file, optns = list()) {
                                               ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
     
     #########data###########
-    idx <- which(tolower(names(rawData)) %in% c("sampleid", "quantity", "analysisname", "analytename"))
+    # idx <- which(tolower(names(rawData)) %in% c("sampleid", "quantity", "analysisname", "analytename"))
+    # 
+    # newData <-
+    #   dcast(rawData[, idx],
+    #         AnalysisName + sampleID ~ AnalyteName, 
+    #         value.var = "Quantity")
+    # 
+    # aa <- 
+    # list("data" = newData,
+    #      "meta" = rawData)
     
-    newData <-
-      dcast(rawData[, idx],
-            AnalysisName + sampleID ~ AnalyteName, 
-            value.var = "Quantity")
-
-    aa <- 
-    list("data" = newData,
-         "meta" = rawData)
-    
-    return(aa)
+    return(rawData)
 }

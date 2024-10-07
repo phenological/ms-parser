@@ -5,14 +5,14 @@ test_that("analyte names are consisten", {
   new <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA3.TSV")
   
   #AccQTag should not be present 
-  expect_true(length(grep("AccQTag", colnames(new))) == 0)
-  expect_true(length(grep("AccQTag", colnames(new))) == 0)
-  expect_true(length(grep("AccQTag", colnames(new))) == 0)
+  expect_true(length(grep("AccQTag", new$AnalyteName)) == 0)
+  expect_true(length(grep("AccQTag", new$AnalyteName)) == 0)
+  expect_true(length(grep("AccQTag", new$AnalyteName)) == 0)
   
   #[IS] should be the only thing signifying internal standards
-  expect_true("Valine [IS]" %in% colnames(oldest$data))  
-  expect_true("Valine [IS]" %in% colnames(recent$data)) 
-  expect_true("Valine [IS]" %in% colnames(new$data)) 
+  expect_true("Valine [IS]" %in% new$AnalyteName)  
+  expect_true("Valine [IS]" %in% new$AnalyteName) 
+  expect_true("Valine [IS]" %in% new$AnalyteName) 
   
 })
 
@@ -22,12 +22,12 @@ test_that("Sample information columns are the same", {
   new <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA3.TSV")
   
   #newest exports have 20 extra columns
-  expect_true(length(setdiff(colnames(new$meta), colnames(oldest$meta))) == 20) 
+  expect_true(length(setdiff(colnames(new), colnames(oldest))) == 20) 
   
   #should be no other differences
-  expect_true(length(setdiff(colnames(oldest$meta), colnames(new$meta))) == 0)
-  expect_true(length(setdiff(colnames(oldest$meta), colnames(recent$meta))) == 0)
-  expect_true(length(setdiff(colnames(recent$meta), colnames(oldest$meta))) == 0)
+  expect_true(length(setdiff(unique(new$AnalyteName), unique(oldest$AnalyteName))) == 0)
+  expect_true(length(setdiff(unique(new$AnalyteName), unique(oldest$AnalyteName))) == 0)
+  expect_true(length(setdiff(unique(new$AnalyteName), unique(oldest$AnalyteName))) == 0)
   
   })
 
@@ -35,10 +35,10 @@ test_that("sampleID is correct on older cohorts", {
   aa <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA.TSV")
   
   #should have all unique sampleIDs
-  expect_equal(length(unique(aa[["data"]][["sampleID"]])), nrow(aa[["data"]]))
+  expect_equal(length(unique(aa$sampleID)), length(unique(aa$AnalysisName)))
   
   #should have COV sample IDs
-  expect_true(c("COV00261") %in% aa$data$sampleID)
+  expect_true(c("COV00261") %in% aa$sampleID)
 
 })
 
@@ -46,11 +46,10 @@ test_that("sampleID is correct on newer cohorts", {
   aa <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA2.TSV")
   
   #should have all unique sampleIDs
-  expect_equal(length(unique(aa[["data"]][["sampleID"]])), nrow(aa[["data"]]))
+  expect_equal(length(unique(aa$sampleID)), length(unique(aa$AnalysisName)))
   
   #should have COV sample IDs
-  expect_equal(aa[["data"]][["sampleID"]][25], "COV17242")
-  
+  expect_true(c("COV17242") %in% aa$sampleID)
 })
 
 

@@ -13,8 +13,12 @@ readAA(file, optns = list())
 
 \item{optns}{list of options
 \itemize{
-\item codePosition - position of the code in the file name. Default is
-where cal is found in the analysis name.
+\item codePosition - position of the code in the file name for sampleID.
+Default is where cal is found in the analysis name.
+\item projectName - the name of the project. For example "covid19". The default
+will take it from the first position in AnalysisName.
+\item cohortName - the name of the cohort. For example "harvardC2". The default
+will take it from the second position in AnalysisName
 }}
 }
 \value{
