@@ -19,6 +19,8 @@ Default is where cal is found in the analysis name.
 will take it from the first position in AnalysisName.
 \item cohortName - the name of the cohort. For example "harvardC2". The default
 will take it from the second position in AnalysisName
+\item sampleMatrixType - sample matrix type, usually "PLA", "SER" or "URI".
+The default will take it from the AnalysisName
 }}
 }
 \value{

@@ -9,6 +9,8 @@
 #'    will take it from the first position in AnalysisName.
 #'    \item cohortName - the name of the cohort. For example "harvardC2". The default 
 #'    will take it from the second position in AnalysisName
+#'    \item sampleMatrixType - sample matrix type, usually "PLA", "SER" or "URI". 
+#'    The default will take it from the AnalysisName
 #' }
 #' @return rawData read from TSV file
 #'
@@ -185,10 +187,35 @@ readAA <- function(file, optns = list()) {
           bold(blue(sample_types)), fill = TRUE)
     
     #############sampleMatrixType##########
-    rawData$sampleMatrixType <- ifelse(grepl("PLA", rawData$AnalysisName), "PLA",
-                                       ifelse(grepl("URI", rawData$AnalysisName), "URI",
-                                              ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
     
+    if("sampleMatrixType" %in% names(optns)){
+      rawData$sampleMatrixType <- optns$sampleMatrixType
+    }else{
+      rawData$sampleMatrixType <- ifelse(grepl("PLA", rawData$AnalysisName), "PLA",
+                                         ifelse(grepl("URI", rawData$AnalysisName), "URI",
+                                                ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
+    }
+    
+    
+    #########long format###########
+    fixed_columns <- c("sampleID", 
+                       "AnalyteName", 
+                       "AnalysisName",
+                       "cohortName",
+                       "projectName",
+                       "sampleMatrixType")
+
+    varying_columns <- setdiff(names(rawData), fixed_columns)
+    
+    rawData <- reshape(rawData, 
+                           varying = varying_columns,
+                           v.names = "paramValue",
+                           timevar = "paramName",
+                           times = varying_columns,
+                           direction = "long",
+                           idvar = fixed_columns)
+    
+    rownames(rawData) <- 1:(nrow(rawData))
     #########data###########
     # idx <- which(tolower(names(rawData)) %in% c("sampleid", "quantity", "analysisname", "analytename"))
     # 
