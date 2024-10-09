@@ -203,7 +203,8 @@ readAA <- function(file, optns = list()) {
                        "AnalysisName",
                        "cohortName",
                        "projectName",
-                       "sampleMatrixType")
+                       "sampleMatrixType",
+                       "sampleType")
 
     varying_columns <- setdiff(names(rawData), fixed_columns)
     
