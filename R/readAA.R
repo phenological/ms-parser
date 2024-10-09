@@ -196,15 +196,11 @@ readAA <- function(file, optns = list()) {
                                                 ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
     }
     
-    matrixType <- table(rawData$sampleMatrixType)
-    
-    if (dim(matrixType) > 1) {
-      cat(crayon::red("fusion: " %+%
-                        crayon::red(matrixType) %+%
-                        crayon::red(" found")),
-          fill = TRUE)
-    }
-    
+   if(sum(is.na(rawData$sampleMatrixType)) > 0){
+     
+     print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
+   }
+     
     #########long format###########
     fixed_columns <- c("sampleID", 
                        "AnalyteName", 
