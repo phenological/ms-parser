@@ -1,4 +1,14 @@
 
+test_that("NA sampleID's removed and AnalysisNames listed in output", {
+  expected_message <- "The following AnalysisName have no sampleID and were not processed:: "
+  
+  output <- capture.output(readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA4.TSV"))
+  
+  idx <- grep("The following AnalysisName have no sampleID and were not processed::", output)  
+  
+  expect_true(length(idx) > 0)
+})
+
 test_that("analyte names are consisten", {
   oldest <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA.TSV")
   recent <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA2.TSV")

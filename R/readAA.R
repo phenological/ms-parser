@@ -145,6 +145,17 @@ readAA <- function(file, optns = list()) {
       }
     })
     
+    #######NA sampleIDs#######
+    idx <- which(is.na(rawData$sampleID))
+    noSampleID <- paste(unique(rawData[idx, "AnalysisName"]), collapse = ", ")
+    if(length(idx) > 0){
+      cat(crayon::red("The following AnalysisName have no sampleID and were not processed:: " %+%
+                        crayon::red(noSampleID)))
+      
+      notProcessed <- rawData[idx,]
+      rawData <- rawData[-idx,]
+    }
+   
     #clean up the names
     rawData$sampleID <- cleanNames(rawData$sampleID)
     
@@ -197,7 +208,6 @@ readAA <- function(file, optns = list()) {
     }
     
    if(sum(is.na(rawData$sampleMatrixType)) > 0){
-     
      print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
    }
      
