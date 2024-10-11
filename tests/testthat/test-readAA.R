@@ -71,6 +71,36 @@ test_that("can supply optional arguments", {
   expect_true(unique(aa$cohortName) == "first")
   })
 
+
+test_that("plateID can be added", {
+file = "~/git/phenological/ms-parser/inst/extdata/plaAA.TSV"
+file = "~/git/phenological/ms-parser/inst/extdata/plaAA2.TSV"
+file = "~/git/phenological/ms-parser/inst/extdata/plaAA3.TSV"
+  file = "~/git/phenological/ms-parser/inst/extdata/plaAA4.TSV"
+
+  #requies position change
+p1 <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA.TSV",
+             optns = list(platePosition = 6))
+idx <- which(p1$paramName == "plateID")
+expect_true(unique(p1[idx, "paramValue"]) == "PLASMA8B") 
+
+#regular
+ p2 <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA2.TSV")
+ idx <- which(p2$paramName == "plateID")
+expect_contains(unique(p2[idx, "paramValue"]), expected = "COVp263") 
+
+ #regular
+ p3 <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA3.TSV")
+ idx <- which(p3$paramName == "plateID")
+ expect_true(unique(p3[idx, "paramValue"]) == "SPTp003")
+ 
+ #rows that are automatically removed
+ p4 <- readAA(file = "~/git/phenological/ms-parser/inst/extdata/plaAA4.TSV")
+ idx <- which(p4$paramName == "plateID")
+ expect_true(unique(p4[idx, "paramValue"]) == "DWAp016")
+ 
+})
+
 # test_that("read multiple plates", {
 #   plasmaFolder <- "~/git/phenological/ms-parser/inst/extdata/"
 #   plates <- dir(plasmaFolder, pattern = "\\.TSV$")

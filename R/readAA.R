@@ -3,8 +3,10 @@
 #' @param file - the file path to be imported
 #' @param optns list of options
 #' \itemize{
-#'    \item codePosition - position of the code in the file name for sampleID. 
-#'    Default is where cal is found in the analysis name.
+#'    \item codePosition - position of the code in the AnalysisName for sampleID. 
+#'    Default is where cal is found in the AnalysisName.
+#'    \item platePosition - position of the code in the AnalysisName for the plateID.
+#'    The default will use the position prior to that used for sampleID (codePosition).
 #'    \item projectName - the name of the project. For example "covid19". The default
 #'    will take it from the first position in AnalysisName.
 #'    \item cohortName - the name of the cohort. For example "harvardC2". The default 
@@ -67,6 +69,18 @@ readAA <- function(file, optns = list()) {
     } else {
       codePosition <- grep(pattern = "cal", x = tolower(pos))
     }
+    
+    ########plateID##########
+    if("platePosition" %in% names(optns)){
+      platePosition <- optns$platePosition
+    } else {
+      platePosition <- codePosition - 1
+    }
+    rawData$plateID <- sapply(rawData$AnalysisName, function(name) {
+      # Split by "_"
+      parts <- strsplit(name, "_")[[1]]
+        return(parts[platePosition]) 
+    })
     
     #######make sample information columns the same#######
     colnames(rawData) <- str_replace_all(colnames(rawData), c(";" = "",
@@ -158,6 +172,8 @@ readAA <- function(file, optns = list()) {
    
     #clean up the names
     rawData$sampleID <- cleanNames(rawData$sampleID)
+    
+    
     
     #############No blank sampleTypes#########
     idx <- which(is.na(rawData$sampleType))
