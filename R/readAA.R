@@ -19,6 +19,7 @@
 #' @export
 #' @import utils
 #' @import crayon
+#' @import stats
 #' @importFrom stringr str_replace_all
 #' @importFrom reshape2 dcast
 
@@ -74,7 +75,15 @@ readAA <- function(file, optns = list()) {
     if("platePosition" %in% names(optns)){
       platePosition <- optns$platePosition
     } else {
-      platePosition <- codePosition - 1
+      # platePosition <- codePosition - 1
+      ms_index <- which(grepl("MS", pos))
+      p_index <- which(grepl("p", pos[(ms_index + 1):length(pos)]))[1]
+      platePosition <- ms_index + p_index
+      
+      if(is.na(platePosition)){
+        p_index <- which(grepl("PLASMA", pos[(ms_index + 1):length(pos)]))[1]
+        platePosition <- ms_index + p_index
+      }
     }
     rawData$plateID <- sapply(rawData$AnalysisName, function(name) {
       # Split by "_"
@@ -225,6 +234,11 @@ readAA <- function(file, optns = list()) {
     
    if(sum(is.na(rawData$sampleMatrixType)) > 0){
      print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
+     
+     #replace NAs
+     rawData$sampleMatrixType <- unique(na.omit(rawData$sampleMatrixType))
+     
+     print(paste0(unique(rawData$sampleMatrixType)," replaced NA sampleMatrixTypes"))
    }
      
     #########long format###########
