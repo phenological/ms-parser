@@ -1,230 +1,255 @@
-#' extract targeted MS data from task export xml file
-#'
-#' @param path - the path to the expName folder
-#' @param optns list of optns
+#' readTRY
+#' 
+#' @param file character file path
+#' @param optns list of options
 #' \itemize{
-#'    \item codePosition - position of the code in the file name. Default is 8.
-#'    \item columnList - list of columns to be selected
+#'    \item codePosition - position of the code in the AnalysisName for sampleID. 
+#'    Default is where cal is found in the AnalysisName.
+#'    \item platePosition - position of the code in the AnalysisName for the plateID.
+#'    The default will use the position prior to that used for sampleID (codePosition).
+#'    \item projectName - the name of the project. For example "covid19". The default
+#'    will take it from the first position in AnalysisName.
+#'    \item cohortName - the name of the cohort. For example "harvardC2". The default 
+#'    will take it from the second position in AnalysisName
+#'    \item sampleMatrixType - sample matrix type, usually "PLA", "SER" or "URI". 
+#'    The default will take it from the AnalysisName
 #' }
-#' @return a dataElement
-#'
+#' @return a data frame in long format
 #' @export
-#' @importFrom xml2 read_xml xml_attr xml_find_all xml_attrs
-#' @importFrom dplyr %>%
-readTRY <- function(path, optns = list()){
+#' @import utils
+#' @import crayon
+#' @import stats
+#' @importFrom stringr str_replace_all
+#' @importFrom reshape2 dcast
+
+readBA <- function(file, optns = list()){
   
-  id <- name <- createdate <- createtime <- type <- desc <- stdconc <- NULL
-  vial <- inletmethodname <- msmethodname <- tunemethodname <- instrument <- NULL
+  ####read in the file####
+  if (grepl("\\.txt$", file, ignore.case = TRUE)) {
+    rawData <- readTXT(file)
+  }
   
-  # get sampleID position in title
+  if (grepl("\\.xml$", file, ignore.case = TRUE)) {
+    rawData <- readXML2(file)
+  }
+  
+  if (grepl("\\.tsv$", file, ignore.case = TRUE)) {
+    rawData <- read.delim2(file = file,
+                           fileEncoding = "latin1",
+                           header = TRUE,
+                           check.names = FALSE)
+  }
+  
+  #####colnames#######
+  
+  ######Empty Lines#########
+  cat(paste("fusion:", nrow(rawData),
+            "line(s) read\n"))
+  
+  fi <- !is.na(rawData$AnalyteName)
+  rawData <- rawData[fi,]
+  cat(paste("fusion:",
+            sum(!fi),
+            "empty line(s) removed\n"))
+  
+  #split up the analsis name for project, cohort and sampleID
+  idx <- grep(pattern = "cal", x = tolower(rawData$AnalysisName))[1]
+  pos <- strsplit(rawData[idx,"AnalysisName"], "_")[[1]]
+  
+  ######projectName######
+  if("projectName" %in% names(optns)){
+    rawData$projectName <- optns$projectName
+  }else{
+    rawData$projectName <- pos[1]
+  }
+  #######cohortName#######
+  if("cohortName" %in% names(optns)){
+    rawData$cohortName <- optns$cohortName
+  }else{
+    rawData$cohortName <- pos[2]
+  }
+  
+  #############sampleMatrixType##########
+  
+  if("sampleMatrixType" %in% names(optns)){
+    rawData$sampleMatrixType <- optns$sampleMatrixType
+  }else{
+    rawData$sampleMatrixType <- ifelse(grepl("PLA", rawData$AnalysisName), "PLA",
+                                       ifelse(grepl("URI", rawData$AnalysisName), "URI",
+                                              ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
+  }
+  
+  if(sum(is.na(rawData$sampleMatrixType)) > 0){
+    print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
+    
+    #replace NAs
+    rawData$sampleMatrixType <- unique(na.omit(rawData$sampleMatrixType))
+    
+    print(paste0(unique(rawData$sampleMatrixType)," replaced NA sampleMatrixTypes"))
+  }
+  
+  ########plateID##########
+  if("platePosition" %in% names(optns)){
+    platePosition <- optns$platePosition
+  } else {
+    platePosition <- which(grepl("p[0-9]+", pos))
+  }
+  
+  rawData$plateID <- sapply(rawData$AnalysisName, function(name) {
+    # Split by "_"
+    parts <- strsplit(name, "_")[[1]]
+    return(parts[platePosition]) 
+  })
+  
+  ######number of compounds############
+  compoundList <- unique(rawData$AnalyteName)
+  numberOfCompounds <- length(compoundList)
+  cat(paste("fusion:",
+            numberOfCompounds,
+            "compound(s) found\n"))
+  
+  #internal standards only requir [IS] and AccQTag does not need to be present in any names confirmed by MS manager
+  ######AnalyteName#########
+  rawData$AnalyteName <- ifelse(grepl("SIL",  rawData$AnalyteName), 
+                                paste0(rawData$AnalyteName, "[IS]"), 
+                                rawData$AnalyteName)
+  
+  rawData$AnalyteName <- str_trim(str_replace_all(rawData$AnalyteName, c("SIL" = "",
+                                                                         "\\." = "-",
+                                                                         "13C215N" = "",
+                                                                         "13C5" = "",
+                                                                         "13C" = "",
+                                                                         "alpha-" = "alpha ",
+                                                                         "beta-" = "beta ",
+                                                                         "gamma-" = "gamma ",
+                                                                         "," = "",
+                                                                         "\\bD[0-9]+\\b" = "",          
+                                                                         "\\b[0-9]+C[0-9]+\\b" = "")))
+  
+  #######number of samples############
+  cat(paste("fusion:",
+            length(unique(rawData$AnalysisName)),
+            "sample(s) found\n"))
+  
+  ###### looking for duplicated lines########
+  idx <- which(duplicated(rawData[, which(colnames(rawData) %in% c("AnalysisName", "AnalyteName"))]) |
+                 duplicated(rawData[,which(colnames(rawData) %in% c("AnalysisName", "AnalyteName"))], fromLast = TRUE))
+  
+  if (length(idx) > 0) {
+    cat(crayon::red("fusion: " %+%
+                      crayon::red(idx) %+%
+                      crayon::red(" duplicated line(s) found")),
+        fill = TRUE)
+  }
+  idx <- which(duplicated(rawData[,which(colnames(rawData) %in% c("AnalysisName", "AnalyteName"))]))
+  
+  if (length(idx) > 0) {
+    rawData <- rawData[-idx,]
+    cat(crayon::white("fusion: " %+%
+                        crayon::white(idx) %+%
+                        crayon::white(" duplicated line(s) removed")),
+        fill = TRUE)
+  }
+  
+  #############sampleID########
+  #get sampleID position in title
   if ("codePosition" %in% names(optns)) {
     codePosition <- optns$codePosition
   } else {
-    codePosition <- 8
+    codePosition <- grep(pattern = "cal", x = tolower(pos))
   }
   
-  # get list of metabolites if not default
-  if ("columnsList" %in% names(optns)) {
-    columnsList <- optns$columnsList
-  } else {
-    columnsList <- c("tryptophan",
-                     "3-hydroxykynurenine",
-                     "3-hydroxyanthranilic acid",
-                     "kynurenic acid",
-                     "nicotinamide riboside",
-                     "quinolinic acid",
-                     "nicotinic acid",
-                     "indole-3-acetic acid",
-                     "picolinic acid",
-                     "xanthurenic acid",
-                     "kynurenine",
-                     "citrulline",
-                     "dopamine",
-                     "5-hydroxyindole acetic acid",
-                     "neopterin",
-                     "beta-nicotinamide mononucleotide",
-                     "serotonin",
-                     "nicotinamide adenine dinucleotide",
-                     "SIL tryptophan D5",
-                     "SIL 3-hydroxykynurenine 13C215N",
-                     "SIL 3-hydroxyanthranilic acid D3",
-                     "SIL kynurenic acid D5",
-                     "SIL nicotinamide riboside D3",
-                     "SIL quinolinic acid D3",
-                     "SIL nicotinic acid D4",
-                     "SIL picolinic acid D3",
-                     "SIL xanthurenic acid D4",
-                     "SIL kynurenine D4",
-                     "SIL indole-3-acetic acid D4",
-                     "SIL citrulline D7",
-                     "SIL dopamine D4",
-                     "SIL 5-hydroxyindole acetic acid D5",
-                     "SIL neopterin 13C5",
-                     "SIL beta-nicotinamide mononucleotide D3",
-                     "Melatonin")
-  }
-
-  xml <- read_xml(path)
-  
-  # retrieving sample information from SAMPLELISTDATA
-  sample <- xml_children(xml_find_all(xml, "//GROUPDATA/GROUP/SAMPLELISTDATA"))
-  sample <- data.frame(do.call("rbind", lapply(xml_attrs(sample), function(x) unlist(x))))
-  sampleInfo <- sample %>% dplyr::select(c(id,
-                                           name,
-                                           createdate,
-                                           createtime,
-                                           type,
-                                           desc,
-                                           stdconc,
-                                           vial,
-                                           inletmethodname,
-                                           msmethodname,
-                                           tunemethodname,
-                                           instrument))
-
-  # retrieving data for each samples from SAMPLELISTDATA
-  compound <- xml_attrs(xml_find_all(xml, "//SAMPLELISTDATA/SAMPLE/COMPOUND"))
-  COM <- data.frame(do.call("rbind", lapply(compound, function(x) unlist(x))))
-
-  peak <- xml_attrs(xml_find_all(xml, "//SAMPLELISTDATA/SAMPLE/COMPOUND/PEAK"))
-  PEAK <- data.frame(do.call("rbind", lapply(peak, function(x) unlist(x))))
-
-  ispeak <- xml_attrs(xml_find_all(xml, "//SAMPLELISTDATA/SAMPLE/COMPOUND/PEAK/ISPEAK"))
-  ISPEAK <- data.frame(do.call("rbind", lapply(ispeak, function(x) unlist(x))))
-
-  COMPOUND <- cbind(COM, PEAK, ISPEAK)
-
-  # retrieving compound names
-  compoundNames <- unique(COMPOUND$name)
-
-  # performing a few data integrity checks
-  # checking for missing metabolites
-  missing <- setdiff(columnsList, compoundNames)
-  if (length(missing) > 0) {
-    msg <- paste("fusion::getTryXML >> Missing metabolites:", missing, "\n")
-    message(crayon::red(msg))
-  }
-  ## nrow(COMPOUND) must be a ntuple of the number of compounds
-  if (!nrow(COMPOUND) / nrow(sampleInfo) == nrow(COMPOUND) %/% nrow(sampleInfo)) {
-    cat(crayon::red("fusion::getTRY >> dimension problems"))
-  } else {
-    N <- nrow(COMPOUND) / nrow(sampleInfo)
-  }
-
-  ## all samples are expected to have the same measurements
-  if (!sum(unname(table(COMPOUND$sampleid)) == N) == nrow(sampleInfo)) {
-    cat(crayon::red("fusion::getTRY >> dimension problems with compounds"))
-  }
-
-  # matching sample IDs from SAMPLELISTDATA
-  idx <- match(COMPOUND$sampleid, sampleInfo$id)
-  if (!identical(order(unique(idx)), unique(idx))) {
-    cat(crayon::red("fusion::getTRY >> sampleInfo not in the same order as data"))
-  }
-
-  # creating proper columns for dataElement
-  code <- sampleInfo$name[idx]
-  sampleID <- gsub(
-    " ",
-    "",
-    makeUnique(
-      sapply(
-        strsplit(code, "_"), "[", codePosition),
-      fromFirst = TRUE))
-
-  sourceID <- gsub(
-    " ",
-    "",
-    makeUnique(
-      sapply(
-        strsplit(code, "_"), "[", codePosition + 1),
-      fromFirst = TRUE))
-
-  sampleType <- factor(sampleInfo$type[idx],
-                       levels = c("Analyte", "Blank", "ltr", "QC", "Standard"),
-                       labels = c("analyte", "blank", "ltr", "qc", "standard"))
-  # creating LTR type
-  idx <- grep("LTR", sampleID)
-  sampleType[idx] <- "ltr"
-
-  # adding required fields (columns)
-  COMPOUND$sampleID <- sampleID
-  COMPOUND$sourceID <- sourceID
-  COMPOUND$sampleType <- sampleType
-  COMPOUND$expname <- basename(path)
-
-  # casting the data
-  # (as.numeric is mandatory otherwise dcast will order id in alphabetical order)
-  .Data <- dcast(COMPOUND, as.numeric(sampleid) ~ as.numeric(id), value.var = "analconc")
-
-  # checking that data are matched with sampleInfo
-  if(!identical(as.character(.Data[,1]), sampleInfo$id)){
-    cat(crayon::red("fusion::getTRY >> sampleInfo not in the same order as .Data"))
-  } else {
-    .Data <- .Data[,-1]
-  }
-
-  obsDescr <- split(COMPOUND, 1:N)
-  #checking that description matches data columns
-  if(!identical(unname(sapply(obsDescr, function(x) unique(x$id))), colnames(.Data))) {
-    cat(crayon::red("fusion::getTRY >> order of data and obsDescr does not match\n"))
-  } else {
-    varName <- unname(sapply(obsDescr, function(x) unique(x$name)))
-  }
-
-  # making data numeric
-  .Data <- sapply(.Data, function(x) as.numeric(x))
-  colnames(.Data) <- varName
-  rownames(.Data) <- sampleInfo$name
-
-  # dividing by molecular weight
-  mw <- tMsTestsets$mw
-  idx <- match(varName, mw$analyte)
-  for (i in 1:length(varName)) {
-    if(varName[i] %in% mw$analyte) {
-      .Data[,i] <- .Data[,i] / mw$mw[which(mw$analyte == varName[i])]
+  #double blanks, LTRs, QC and CAL need further individualizing since they are not unique yet.
+  rawData$sampleID <- sapply(rawData$AnalysisName, function(name) {
+    # Split by "_"
+    parts <- strsplit(name, "_")[[1]]
+    
+    # Check if "Blank", "LTR", "QC" or "CAL" is in the split parts. this covers sltr, vltr and pqc as is 
+    if(any(grep("blank|ltr|qc|cal", tolower(parts)))){
+      
+      # Find the position of "Blank" or "LTR" and take the part with the number after it
+      idx <- which(grepl("blank|ltr|qc|cal", tolower(parts)))
+      
+      return(paste(parts[idx], parts[idx + 1], sep = "_"))  # Combine "Blank" or "LTR" with the next number
     } else {
-      cat(crayon::yellow("fusion::getTRY >> ", varName[i], "molecular weight not found\n"))
+      # For all other cases, use the default code extraction
+      return(parts[codePosition]) 
     }
+  })
+  
+  #NA sampleIDs
+  idx <- which(is.na(rawData$sampleID))
+  noSampleID <- paste(unique(rawData[idx, "AnalysisName"]), collapse = ", ")
+  if(length(idx) > 0){
+    cat(crayon::red("The following AnalysisName have no sampleID and were not processed:: " %+%
+                      crayon::red(noSampleID)))
+    
+    notProcessed <- rawData[idx,]
+    rawData <- rawData[-idx,]
   }
-
-  # creating dataElement
-  da <- new("dataElement",
-            .Data = .Data,
-            obsDescr = obsDescr,
-            varName = unlist(varName),
-            type = "T-MS",
-            method = "tryptophan")
-  return(da)
+  
+  #clean up the names
+  rawData$sampleID <- cleanNames(rawData$sampleID)
+  
+  #############sampleType##########
+  #rename column correctly
+  colnames(rawData)[which(colnames(rawData) == "SampleType")] <- "sampleType"
+  
+  #assign correct type
+  idx <- grep("blank", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "blank"
+  
+  idx <- grep("sltr", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "sltr"
+  
+  idx <- grep("^ltr", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "ltr"
+  
+  idx <- grep("^pqc", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "pqc"
+  
+  idx <- grep("^qc", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "qc"
+  
+  idx <- grep("^cal", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "cal"
+  
+  idx <- grep("sltr|^ltr|^pqc|^qc|^cal|blank", tolower(rawData$sampleID), invert = T)
+  rawData$sampleType[idx] <- "sample"
+  
+  rawData$sampleType <- as.factor(rawData$sampleType)
+  
+  sample_types <- paste(levels(rawData$sampleType), collapse = ", ")
+  
+  cat(bold(blue("The following sample types were found: ")) %+% 
+        bold(blue(sample_types)), fill = TRUE)
+  
+  #NA sampleTypes
+  idx <- which(is.na(rawData$sampleType))
+  if(length(idx) > 0){
+    cat(paste("The following ", length(idx), " sample(s) have no sampleType:", rawData[idx, "AnalysisName"]))
+  }
+  
+  #########long format###########
+  fixed_columns <- c("sampleID", 
+                     "AnalyteName", 
+                     "AnalysisName",
+                     "cohortName",
+                     "projectName",
+                     "sampleMatrixType",
+                     "sampleType")
+  
+  varying_columns <- setdiff(names(rawData), fixed_columns)
+  
+  rawData <- reshape(rawData, 
+                     varying = varying_columns,
+                     v.names = "paramValue",
+                     timevar = "paramName",
+                     times = varying_columns,
+                     direction = "long",
+                     idvar = fixed_columns)
+  
+  rownames(rawData) <- 1:(nrow(rawData))
+  
+  return(rawData)
 }
-
-# xml_name(xml)
-# xml_attrs(xml)
-# xml_name(xml_children(xml))
-# xml_name(xml_children(xml_children(xml)[[3]]))
-# xml_name(xml_children(xml_children(xml_children(xml)[[3]])))
-# xml_name(xml_children(xml_children(xml_children(xml)[[3]]))[[1]])
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[3]]))
-#
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))[[1]])
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))[[1]]))
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[2]]))[[1]])[[1]]))
-#
-# xml_name(xml_children(xml_children(xml_children(xml_children(xml_children(xml)[[3]]))[[3]])))
-#
-# response <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/RESPONSE"))
-# RESPONSE <- data.frame(do.call("rbind", lapply(response, function(x) unlist(x))))
-# curve <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE"))
-# CURVE <- data.frame(do.call("rbind", lapply(curve, function(x) unlist(x))))
-# calcurve <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/CALIBRATIONCURVE"))
-# CALCURVE <- data.frame(do.call("rbind", lapply(calcurve, function(x) unlist(x))))
-# correlation <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/CORRELATION"))
-# CORRELATION <- data.frame(do.call("rbind", lapply(correlation, function(x) unlist(x))))
-# determination <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/DETERMINATION"))
-# DETERMINATION <- data.frame(do.call("rbind", lapply(determination, function(x) unlist(x))))
-# responsefactor <- xml_attrs(xml_find_all(xml, "//CALIBRATIONDATA/COMPOUND/CURVE/RESPONSEFACTOR"))
-# RESPONSEFACTOR <- data.frame(do.call("rbind", lapply(responsefactor, function(x) unlist(x))))
-
-
-

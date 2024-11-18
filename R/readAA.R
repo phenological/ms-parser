@@ -37,6 +37,11 @@ readAA <- function(file, optns = list()) {
       return(invisible(NULL))  # Return invisible NULL to allow further execution
     }
     
+    #######colnames#######
+    colnames(rawData) <- str_replace_all(colnames(rawData), c(";" = "",
+                                                              "Area to height ratio indicates whether this is a real chromatographic peak." = "Area to height ratio"))
+    
+    ####Empty Lines########
     cat(paste("fusion:", nrow(rawData),
               "line(s) read\n"))
     
@@ -50,25 +55,37 @@ readAA <- function(file, optns = list()) {
     idx <- grep(pattern = "cal", x = tolower(rawData$AnalysisName))[1]
     pos <- strsplit(rawData[idx,"AnalysisName"], "_")[[1]]
     
-    ######projectName######
+    #####projectName######
     if("projectName" %in% names(optns)){
       rawData$projectName <- optns$projectName
     }else{
       rawData$projectName <- pos[1]
     }
     
-    #######cohortName#######
+    #####cohortName#######
     if("cohortName" %in% names(optns)){
       rawData$cohortName <- optns$cohortName
     }else{
       rawData$cohortName <- pos[2]
     }
     
-    ####### get sampleID position in title#######
-    if ("codePosition" %in% names(optns)) {
-      codePosition <- optns$codePosition
-    } else {
-      codePosition <- grep(pattern = "cal", x = tolower(pos))
+    #####sampleMatrixType##########
+    
+    if("sampleMatrixType" %in% names(optns)){
+      rawData$sampleMatrixType <- optns$sampleMatrixType
+    }else{
+      rawData$sampleMatrixType <- ifelse(grepl("PLA", rawData$AnalysisName), "PLA",
+                                         ifelse(grepl("URI", rawData$AnalysisName), "URI",
+                                                ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
+    }
+    
+    if(sum(is.na(rawData$sampleMatrixType)) > 0){
+      print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
+      
+      #replace NAs
+      rawData$sampleMatrixType <- unique(na.omit(rawData$sampleMatrixType))
+      
+      print(paste0(unique(rawData$sampleMatrixType)," replaced NA sampleMatrixTypes"))
     }
     
     ########plateID##########
@@ -91,9 +108,7 @@ readAA <- function(file, optns = list()) {
         return(parts[platePosition]) 
     })
     
-    #######make sample information columns the same#######
-    colnames(rawData) <- str_replace_all(colnames(rawData), c(";" = "",
-                                                              "Area to height ratio indicates whether this is a real chromatographic peak." = "Area to height ratio"))
+   
     
     
     ######number of compounds############
@@ -103,7 +118,7 @@ readAA <- function(file, optns = list()) {
               numberOfCompounds,
               "compound(s) found\n"))
     
-    #######make analyte names consistent########
+    #####AnalyteName######
     #fix "Pheny alanine"
     rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("Pheny alanine" = "Phenylalanine")) 
     
@@ -123,12 +138,12 @@ readAA <- function(file, optns = list()) {
    
     rawData$AnalyteName <- gsub("([^ ])\\[IS]", "\\1 [IS]", rawData$AnalyteName)
     
-    #######number of samples############
+    #########number of samples#########
     cat(paste("fusion:",
               length(unique(rawData$AnalysisName)),
               "sample(s) found\n"))
     
-    ###### looking for duplicated lines########
+    ######looking for duplicated lines########
     idx <- which(duplicated(rawData[, which(colnames(rawData) %in% c("AnalysisName", "AnalyteName"))]) |
                    duplicated(rawData[,which(colnames(rawData) %in% c("AnalysisName", "AnalyteName"))], fromLast = TRUE))
     
@@ -148,7 +163,13 @@ readAA <- function(file, optns = list()) {
           fill = TRUE)
     }
     
-    #############adding sampleID########
+####sampleID########
+    #######get sampleID position in title
+    if ("codePosition" %in% names(optns)) {
+      codePosition <- optns$codePosition
+    } else {
+      codePosition <- grep(pattern = "cal", x = tolower(pos))
+    }
     #double blanks, LTRs, QC and CAL need further individualizing since they are not unique yet.
     
     rawData$sampleID <- sapply(rawData$AnalysisName, function(name) {
@@ -168,7 +189,7 @@ readAA <- function(file, optns = list()) {
       }
     })
     
-    #######NA sampleIDs#######
+    #NA sampleIDs
     idx <- which(is.na(rawData$sampleID))
     noSampleID <- paste(unique(rawData[idx, "AnalysisName"]), collapse = ", ")
     if(length(idx) > 0){
@@ -182,15 +203,7 @@ readAA <- function(file, optns = list()) {
     #clean up the names
     rawData$sampleID <- cleanNames(rawData$sampleID)
     
-    
-    
-    #############No blank sampleTypes#########
-    idx <- which(is.na(rawData$sampleType))
-    if(length(idx) > 0){
-      cat(paste("The following ", length(idx), " sample(s) have no sampleType:", rawData[idx, "AnalysisName"]))
-    }
-    
-    #############cleaning sampleType##########
+    #############sampleType##########
     #rename column correctly
     colnames(rawData)[which(colnames(rawData) == "SampleType")] <- "sampleType"
     
@@ -222,24 +235,11 @@ readAA <- function(file, optns = list()) {
     cat(bold(blue("The following sample types were found: ")) %+% 
           bold(blue(sample_types)), fill = TRUE)
     
-    #############sampleMatrixType##########
-    
-    if("sampleMatrixType" %in% names(optns)){
-      rawData$sampleMatrixType <- optns$sampleMatrixType
-    }else{
-      rawData$sampleMatrixType <- ifelse(grepl("PLA", rawData$AnalysisName), "PLA",
-                                         ifelse(grepl("URI", rawData$AnalysisName), "URI",
-                                                ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
+    #No blank sampleTypes
+    idx <- which(is.na(rawData$sampleType))
+    if(length(idx) > 0){
+      cat(paste("The following ", length(idx), " sample(s) have no sampleType:", rawData[idx, "AnalysisName"]))
     }
-    
-   if(sum(is.na(rawData$sampleMatrixType)) > 0){
-     print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
-     
-     #replace NAs
-     rawData$sampleMatrixType <- unique(na.omit(rawData$sampleMatrixType))
-     
-     print(paste0(unique(rawData$sampleMatrixType)," replaced NA sampleMatrixTypes"))
-   }
      
     #########long format###########
     fixed_columns <- c("sampleID", 
@@ -261,7 +261,7 @@ readAA <- function(file, optns = list()) {
                            idvar = fixed_columns)
     
     rownames(rawData) <- 1:(nrow(rawData))
-    #########data###########
+    #data#
     # idx <- which(tolower(names(rawData)) %in% c("sampleid", "quantity", "analysisname", "analytename"))
     # 
     # newData <-
