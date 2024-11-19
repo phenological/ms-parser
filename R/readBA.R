@@ -19,7 +19,7 @@
 #' @import utils
 #' @import crayon
 #' @import stats
-#' @importFrom stringr str_replace_all
+#' @import stringr
 #' @importFrom reshape2 dcast
 
 
@@ -80,6 +80,7 @@ readBA <- function(file, optns = list()){
                                               ifelse(grepl("SER", rawData$AnalysisName), "SER", NA)))
   }
   
+  #NAs
   if(sum(is.na(rawData$sampleMatrixType)) > 0){
     print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
     
@@ -89,6 +90,20 @@ readBA <- function(file, optns = list()){
     print(paste0(unique(rawData$sampleMatrixType)," replaced NA sampleMatrixTypes"))
   }
   
+  #multiple types
+  if(length(unique(rawData$sampleMatrixType)) > 1){
+    print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
+    
+    t <- table(rawData$sampleMatrixType)
+    m <- max(t)
+    smt <- which(t == m)
+    smt <- names(smt)
+    
+    #replace with majority sampleMatrixType 
+    rawData$sampleMatrixType <- smt
+    
+    print(paste0(unique(rawData$sampleMatrixType)," replaced sampleMatrixTypes"))
+  }
   ########plateID##########
   if("platePosition" %in% names(optns)){
     platePosition <- optns$platePosition

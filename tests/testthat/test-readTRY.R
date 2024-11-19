@@ -1,3 +1,20 @@
+
+test_that("readTRy works",{
+  test <- readTRY(file = "~/git/phenological/ms-parser/inst/extdata/TRY.xml")
+  
+  expect_true(object = unique(test$projectName) == "covid19")
+  expect_true(unique(test$cohortName) == "harvard")
+  expect_true(unique(test$sampleMatrixType) == "SER")
+  
+  expect_true(length(grep(pattern = "[IS]", x = unique(test$AnalyteName))) > 1)
+  expect_true(unique(test[which(test$paramName == "plateID"), "paramValue"]) == "COVp41" )
+  
+  idx <- which(grepl(pattern = "LTR", x = unique(test$sampleID)))
+  expect_true(length(idx) > 1)
+})
+
+
+
 ###TXT files#####
 #Tryptophan
  # harvard <- readTXT(path = "~/Downloads/2021-09-21_LGW_COVID_HARVARD_RE-EDIT_P41P42.txt")

@@ -88,6 +88,21 @@ readAA <- function(file, optns = list()) {
       print(paste0(unique(rawData$sampleMatrixType)," replaced NA sampleMatrixTypes"))
     }
     
+    #multiple types
+    if(length(unique(rawData$sampleMatrixType)) > 1){
+      print(paste0(unique(rawData$sampleMatrixType)," sampleMatrixType found"))
+      
+      t <- table(rawData$sampleMatrixType)
+      m <- max(t)
+      smt <- which(t == m)
+      smt <- names(smt)
+      
+      #replace with majority sampleMatrixType 
+      rawData$sampleMatrixType <- smt
+      
+      print(paste0(unique(rawData$sampleMatrixType)," replaced sampleMatrixTypes"))
+    }
+    
     ########plateID##########
     if("platePosition" %in% names(optns)){
       platePosition <- optns$platePosition
