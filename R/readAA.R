@@ -1,3 +1,4 @@
+#' readAA
 #' Read amino acid data from tsv's
 #'
 #' @param file - the file path to be imported

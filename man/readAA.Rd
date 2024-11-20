@@ -2,7 +2,8 @@
 % Please edit documentation in R/readAA.R
 \name{readAA}
 \alias{readAA}
-\title{Read amino acid data from tsv's}
+\title{readAA
+Read amino acid data from tsv's}
 \usage{
 readAA(file, optns = list())
 }
@@ -29,5 +30,6 @@ The default will take it from the AnalysisName
 rawData read from TSV file
 }
 \description{
+readAA
 Read amino acid data from tsv's
 }

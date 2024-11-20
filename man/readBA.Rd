@@ -2,7 +2,8 @@
 % Please edit documentation in R/readBA.R
 \name{readBA}
 \alias{readBA}
-\title{readBA}
+\title{readBA
+Read bile acids from TSV or xml}
 \usage{
 readBA(file, optns = list())
 }
@@ -28,4 +29,5 @@ data frame in long format
 }
 \description{
 readBA
+Read bile acids from TSV or xml
 }

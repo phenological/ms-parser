@@ -1,4 +1,5 @@
 #' readBA
+#' Read bile acids from TSV or xml
 #' @param file character file path
 #' @param optns list of options
 #' \itemize{
@@ -45,8 +46,10 @@ readBA <- function(file, optns = list()){
   
   ####parse####
   rawData <- parseTargetedMS(rawData = rawData, optns = optns)
-  #internal standards only requir [IS] and AccQTag does not need to be present in any names confirmed by MS manager
+  
   ######AnalyteName#########
+  #internal standards only require [IS] confirmed by MS manager
+  if (grepl("\\.xml$", file, ignore.case = TRUE)) {
   rawData$AnalyteName <- str_trim(str_replace_all(rawData$AnalyteName, c("-D4" = " [IS]",
                                                                          "-d5" = "[IS]",
                                                                          "\\." = "-",
@@ -58,6 +61,31 @@ readBA <- function(file, optns = list()){
                                                                          "," = "",
                                                                          "\\bD[0-9]+\\b" = "",          
                                                                          "\\b[0-9]+C[0-9]+\\b" = "")))
+  
+  rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("-" =  "", 
+                                                                "Glycochnodeoxycholic" = "Glycochenodeoxycholic"))
+  }
+  
+  
+  if (grepl("\\.xml$", file, ignore.case = TRUE)) {
+    rawData$AnalyteName <- str_trim(str_replace_all(rawData$AnalyteName, c("-d4" = "",
+                                                                           "\\." = "-",
+                                                                           "_" = "-",
+                                                                           "Acid" = "acid",
+                                                                           "a-" = "alpha ",
+                                                                           "b-" = "beta ",
+                                                                           "g-" = "gamma ",
+                                                                           "," = "",
+                                                                           "\\bD[0-9]+\\b" = "",          
+                                                                           "\\b[0-9]+C[0-9]+\\b" = "")))
+    
+    rawData$AnalyteName <- str_replace(
+      string = rawData$AnalyteName,
+      pattern = "^HDCA$",  # Matches only the string "HDCA" exactly
+      replacement = "Hyodeoxycholic acid (HDCA)"
+    )
+  }
+  
   #########long format###########
   rawData <- longFormat(rawData = rawData)
   

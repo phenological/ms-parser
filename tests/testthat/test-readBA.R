@@ -13,3 +13,6 @@ test_that("readBA works",{
   idx <- which(grepl(pattern = "LTR", x = unique(test$sampleID)))
   expect_true(length(idx) > 1)
 })
+
+
+
