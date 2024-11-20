@@ -1,4 +1,4 @@
-test_that("readTRy works",{
+test_that("readBA works",{
   test <- readBA(file = "~/git/phenological/ms-parser/inst/extdata/BA.xml")
   
   expect_true(object = unique(test$projectName) == "ROCIT20")

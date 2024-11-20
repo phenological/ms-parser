@@ -2,23 +2,30 @@
 % Please edit documentation in R/readSCFA.R
 \name{readSCFA}
 \alias{readSCFA}
-\title{extract targeted MS data from task export xml file}
+\title{readSCFA}
 \usage{
-readSCFA(path, optns = list())
+readSCFA(file, optns = list())
 }
 \arguments{
-\item{path}{\itemize{
-\item the path to the expName folder
-}}
+\item{file}{character file path}
 
-\item{optns}{list of optns
+\item{optns}{list of options
 \itemize{
-\item columnList - list of columns to be selected
+\item codePosition - position of the code in the AnalysisName for sampleID.
+Default is where cal is found in the AnalysisName.
+\item platePosition - position of the code in the AnalysisName for the plateID.
+The default will use the position prior to that used for sampleID (codePosition).
+\item projectName - the name of the project. For example "covid19". The default
+will take it from the first position in AnalysisName.
+\item cohortName - the name of the cohort. For example "harvardC2". The default
+will take it from the second position in AnalysisName
+\item sampleMatrixType - sample matrix type, usually "PLA", "SER" or "URI".
+The default will take it from the AnalysisName
 }}
 }
 \value{
-a dataElement
+data frame in long format
 }
 \description{
-extract targeted MS data from task export xml file
+readSCFA
 }
