@@ -15,6 +15,8 @@ test_that("readTRy works",{
 
 
 
+
+
 ###TXT files#####
 #Tryptophan
  # harvard <- readTXT(path = "~/Downloads/2021-09-21_LGW_COVID_HARVARD_RE-EDIT_P41P42.txt")

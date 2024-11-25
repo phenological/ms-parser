@@ -4,6 +4,7 @@
 #' @return data frame with no empty or all zero columns
 #' @export
 #' @import utils
+#' @import stringr
 
 readTXT <- function(path){
   # Read the entire file into lines
@@ -18,6 +19,13 @@ readTXT <- function(path){
   # Extract compound names using sub to remove "Compound X: " and capture the compound name
   compound_names <- sub("Compound \\d+:\\s*(.*)", "\\1", compound_lines)
   
+  # Find where the column names are (two lines after the last compound line)
+  last_compound_line <- max(which(grepl("^Compound", lines)))
+  colnames_line <- lines[last_compound_line + 2]
+  
+  # Split the column names into a vector
+  col_names <- strsplit(colnames_line, "\t")[[1]]
+  
   # Identify where the data rows start (usually after the last "Compound X:" line)
   data_start <- which(grepl("^Compound", lines))  # Find the first line containing "Compound"
   
@@ -29,11 +37,14 @@ readTXT <- function(path){
   data_text <- paste(data_lines, collapse = "\n")
   
   # Read the data into a data frame
-  data <- read.table(text = data_text, header = FALSE, sep = "\t", fill = TRUE, stringsAsFactors = FALSE,
-                     col.names = c("Index", "NameIndex", "Name", "Type", "SampleText", "PercentDev",
-                                   "StdConc", "Conc", "PrimaryFlags", "Area", "ISArea", "Response",
-                                   "CoeffOfDetermination", "RT", "Vial"))
+  data <- read.table(text = data_text, 
+                     header = FALSE, 
+                     sep = "\t", 
+                     fill = TRUE,
+                     stringsAsFactors = FALSE,
+                     col.names = col_names)
   
+  # "Index", "NameIndex","Name",	"Type",	"StdConc",	"RT",	"Area",	"ISArea",	"Response",	"Primary Flags",	"Conc.",	"%Dev","Sample Text"
   # Now, for each compound, assign the compound name to all rows related to that compound
   compound_count <- length(compound_names)
   
@@ -44,12 +55,12 @@ readTXT <- function(path){
   current_row <- 1
   
   # Find all rows where 'Index' contains "Compound" followed by a number
-  compound_rows <- grep("^Compound", data$Index)
+  compound_rows <- grep("^Compound", data$X)
   
   # Loop over the compound rows and assign their names to the relevant rows in the data
   for (i in 1:length(compound_rows)) {
     # Get the compound number (e.g., 35 from "Compound 35: Melatonin")
-    compound_index <- gsub("^Compound \\d+: (.*)", "\\1", data$Index[compound_rows[i]])
+    compound_index <- gsub("^Compound \\d+: (.*)", "\\1", data$X[compound_rows[i]])
     
     # Determine the next compound row (or the end of the data)
     next_compound_row <- if (i < length(compound_rows)) compound_rows[i + 1] - 1 else nrow(data)
@@ -62,7 +73,12 @@ readTXT <- function(path){
   }
   
   #remove rows that are totally empty or just have compound:: #
-  data <- data[!grepl("Compound", data$Index) & data$Index != "" & !is.na(data$Index), ]
+  data <- data[!grepl("Compound", data$X) & data$X != "" & !is.na(data$X), ]
+  
+  colnames(data)[tolower(colnames(data)) == "name"] <- "AnalysisName"
+  
+  data$AnalyteName <- str_trim(data$AnalyteName)
+  
   return(data)
 }
 

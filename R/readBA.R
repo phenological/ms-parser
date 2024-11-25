@@ -21,8 +21,6 @@
 #' @import crayon
 #' @import stats
 #' @import stringr
-#' @importFrom reshape2 dcast
-
 
 readBA <- function(file, optns = list()){
   
