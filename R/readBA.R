@@ -41,7 +41,7 @@ readBA <- function(file, optns = list()){
   }
   
   #####colnames#######
-  
+  # new <- columnTranslation(file = file, rawData = rawData)
   ####parse####
   rawData <- parseTargetedMS(rawData = rawData, optns = optns)
   

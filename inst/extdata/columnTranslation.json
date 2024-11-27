@@ -1,0 +1,92 @@
+[
+    {
+        "xml": "foundrt",
+        "tsv": "Retention Time[min]",
+        "txt": "RT"
+    },
+    {
+        "xml": "predrt",
+        "tsv": "Expected Retention Time[min]",
+        "txt": ""
+    },
+    {
+        "xml": "area",
+        "tsv": "Area",
+        "txt": "Area"
+    },
+    {
+        "xml": "height",
+        "tsv": "Height",
+        "txt": ""
+    },
+    {
+        "xml": "response",
+        "tsv": "relative Area",
+        "txt": "Response"
+    },
+    {
+        "xml": "pkflags",
+        "tsv": "",
+        "txt": "Primary.Flags"
+    },
+    {
+        "xml": "analconc",
+        "tsv": "Quantity",
+        "txt": "Conc."
+    },
+    {
+        "xml": "signoise",
+        "tsv": "Signal/Noise",
+        "txt": ""
+    },
+    {
+        "xml": "percrecovery",
+        "tsv": "Accuracy/Recovery[%]",
+        "txt": "X.Dev"
+    },
+    {
+        "xml": "mDamasserror",
+        "tsv": "Error [mDa]",
+        "txt": ""
+    },
+    {
+        "xml": "ppmmasserror",
+        "tsv": "Error [ppm]",
+        "txt": ""
+    },
+    {
+        "xml": "ISarea",
+        "tsv": "ISTD Area",
+        "txt": "IS.Area"
+    },
+    {
+        "xml": "ISheight",
+        "tsv": "ISTD Height",
+        "txt": ""
+    },
+    {
+        "xml": "ISfoundrt",
+        "tsv": "Internal Standard Retention Time[min]",
+        "txt": ""
+    },
+    {
+        "xml": "desc",
+        "tsv": "",
+        "txt": "Sample.Text"
+    },
+    {
+        "xml": "stdconc",
+        "tsv": "Expected Quantity",
+        "txt": "Std..Conc"
+    },
+    {
+        "xml": "type",
+        "tsv": "SampleType",
+        "txt": "Type"
+    },
+    {
+        "xml": "rsquared",
+        "tsv": "R2",
+        "txt": "Coeff..Of.Determination"
+    }
+]
