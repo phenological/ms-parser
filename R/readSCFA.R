@@ -42,7 +42,7 @@ readSCFA <- function(file, optns = list()){
   }
   
   #####colnames#######
-  
+  rawData <- columnTranslation(file = file, rawData = rawData)
   ####parse####
   rawData <- parseTargetedMS(rawData = rawData, optns = optns)
  
