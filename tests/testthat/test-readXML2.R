@@ -1,7 +1,7 @@
 test_that("read xml has rsquared", {
   #has the rsquared been included and recorded correctly
   
-  test <- readXML2(path = "~/git/phenological/ms-parser/inst/extdata/TRY.xml")
+  test <- readXML2(path = "~/git/phenological/ms-parser/inst/extdata/TRY/TRY.xml")
   
   idx <- which(test$AnalyteName == "Melatonin")
   
@@ -15,7 +15,7 @@ test_that("read xml has rsquared", {
 
 test_that("BA has rquared included", {
   
-  test <- readXML2(path = "~/git/phenological/ms-parser/inst/extdata/BA.xml")
+  test <- readXML2(path = "~/git/phenological/ms-parser/inst/extdata/BA/BA.xml")
   
   idx <- which(test$AnalyteName == "b-MCA-d5")
   

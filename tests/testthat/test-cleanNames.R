@@ -1,6 +1,6 @@
 
 test_that("older AA sample names cleaned properly",{
-  file = "~/git/phenological/ms-parser/inst/extdata/plaAA.TSV"
+  file = "~/git/phenological/ms-parser/inst/extdata/AA/plaAA.TSV"
   rawData <- read.delim2(file = file,
                          fileEncoding = "latin1",
                          header = TRUE,
@@ -64,7 +64,7 @@ test_that("older AA sample names cleaned properly",{
 
 
 test_that("newer AA sample names cleaned properly",{
-  file = "~/git/phenological/ms-parser/inst/extdata/plaAA2.TSV"
+  file = "~/git/phenological/ms-parser/inst/extdata/AA/plaAA2.TSV"
   rawData <- read.delim2(file = file,
                          fileEncoding = "latin1",
                          header = TRUE,

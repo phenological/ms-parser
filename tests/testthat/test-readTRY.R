@@ -1,6 +1,6 @@
 
 test_that("readTRy works",{
-  test <- readTRY(file = "~/git/phenological/ms-parser/inst/extdata/TRY.xml")
+  test <- readTRY(file = "~/git/phenological/ms-parser/inst/extdata/TRY/TRY.xml")
   
   expect_true(object = unique(test$projectName) == "covid19")
   expect_true(unique(test$cohortName) == "harvard")

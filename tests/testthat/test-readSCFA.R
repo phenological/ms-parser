@@ -1,5 +1,5 @@
 test_that("readSCFA works",{
-  test <- readSCFA(file = "~/git/phenological/ms-parser/inst/extdata/SCFA.xml")
+  test <- readSCFA(file = "~/git/phenological/ms-parser/inst/extdata/SCFA/SCFA.xml")
   
   expect_true(object = unique(test$projectName) == "fibers")
   expect_true(unique(test$cohortName) == "C1")

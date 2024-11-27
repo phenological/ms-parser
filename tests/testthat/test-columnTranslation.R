@@ -1,8 +1,8 @@
 
 test_that("xml colnames translated properly", {
-  rawData <- readXML2(path = "~/git/phenological/ms-parser/inst/extdata/TRY.xml")
+  rawData <- readXML2(path = "~/git/phenological/ms-parser/inst/extdata/TRY/TRY.xml")
   before <- colnames(rawData)
-  rawData <- columnTranslation(rawData = rawData, file = "~/git/phenological/ms-parser/inst/extdata/TRY.xml")
+  rawData <- columnTranslation(rawData = rawData, file = "~/git/phenological/ms-parser/inst/extdata/TRY/TRY.xml")
   after <- colnames(rawData)
   
   #desc should remain desc, there is no tsv equivalent
@@ -15,9 +15,9 @@ test_that("xml colnames translated properly", {
 })
 
 test_that("txt colnames translated properly", {
-  rawData <- readTXT(path = "~/git/phenological/ms-parser/inst/extdata/TRY.TXT")
+  rawData <- readTXT(path = "~/git/phenological/ms-parser/inst/extdata/TRY/TRY.TXT")
   before <- colnames(rawData)
-  rawData <- columnTranslation(rawData = rawData, file = "~/git/phenological/ms-parser/inst/extdata/TRY.TXT" )
+  rawData <- columnTranslation(rawData = rawData, file = "~/git/phenological/ms-parser/inst/extdata/TRY/TRY.TXT" )
   after <- colnames(rawData)
   
   #txt staying the same (no alternative)
