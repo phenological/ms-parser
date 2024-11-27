@@ -83,11 +83,13 @@ readXML2 <- function(path){
   merged_data <- merged_data[, !(names(merged_data) %in% cols_to_remove)]
   
   ####Acquisition Date#####
-  merged_data$`Acquisition Date` <- as.POSIXct(
-                                      paste(merged_data$createdate, merged_data$createtime), 
-                                      format = "%d-%b-%y %H:%M:%S", 
-                                      tz = "Australia/Perth"
-                                    )
+  merged_data$`Acquisition Date` <- paste(merged_data$createdate, merged_data$createtime)
+  
+  # merged_data$`Acquisition Date` <- as.POSIXct(
+  #   paste(merged_data$createdate, merged_data$createtime), 
+  #   format = "%d-%b-%y %H:%M:%S", 
+  #   tz = "Australia/Perth"
+  # )
   ####rsquared####
   #get the rsquared values
   rsquared_nodes <- xml_find_all(xml, "//GROUPDATA/GROUP/CALIBRATIONDATA/COMPOUND/CURVE/DETERMINATION")
