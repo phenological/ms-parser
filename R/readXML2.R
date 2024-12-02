@@ -110,8 +110,8 @@ readXML2 <- function(path){
   )
   
   #those that say "linear" in type are the compounds with rsquared values (most are not IS but on occasion there are)
-  idx <- which(grepl(pattern = "linear", x = tolower(names$type)))
-  names <- names[idx,]
+  idx <- which(grepl(pattern = "rf", x = tolower(names$type)))
+  names <- names[-idx,]
   
   # Combine into a data frame to align rsquared with the analytes
   calibration <- data.frame(
