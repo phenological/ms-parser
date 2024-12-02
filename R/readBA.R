@@ -47,54 +47,87 @@ readBA <- function(file, optns = list()){
   
   ######AnalyteName#########
   #internal standards only require [IS] confirmed by MS manager
+  rawData$AnalyteName <-  str_trim(str_replace_all(
+    rawData$AnalyteName,
+    c("-d4" = " [IS]",
+      "-D4" = " [IS]",
+      "-d5" = " [IS]",
+      "\\." = "-",
+      "_" = "-",
+      "Acid" = "acid",
+      "(^|[^a-zA-Z0-9])a-" = "\\1alpha-",
+      "(^|[^g-zA-Z0-9])g-" = "\\1gamma-",
+      "(^|[^b-zA-Z0-9])b-" = "\\1beta-",
+      "(?<!\\[IS\\])\\[IS\\](\\s*\\[IS\\])+" = "[IS]"
+    )
+  ))
   
-  #########xml##########
-  if (grepl("\\.xml$", file, ignore.case = TRUE)) {
-    rawData$AnalyteName <-  str_trim(str_replace_all(rawData$AnalyteName, c("-D4" = " [IS]",
-                                                "-d5" = "[IS]",
-                                                "\\." = "-",
-                                                "_" = "-",
-                                                "Acid" = "acid",
-                                                "a-" = "alpha ",
-                                                "b-" = "beta ",
-                                                "g-" = "gamma ",
-                                                "," = "",
-                                                "\\bD[0-9]+\\b" = "",          
-                                                "\\b[0-9]+C[0-9]+\\b" = "")))
-    
-    rawData$AnalyteName <- 
-      str_replace(
-        string = rawData$AnalyteName,
-        pattern = "^HDCA$",  # Matches only the string "HDCA" exactly
-        replacement = "HDCA-Hyodeoxycholic acid"
-      )
-  }
- 
-  ######tsv#####
-  if (grepl("\\.tsv$", file, ignore.case = TRUE)) {
-    rawData$AnalyteName <- str_trim(str_replace_all(rawData$AnalyteName, c("-d4" = "",
-                                               "\\." = "-",
-                                               "_" = "-",
-                                               "Acid" = "acid",
-                                               "a-" = "alpha ",
-                                               "b-" = "beta ",
-                                               "g-" = "gamma ",
-                                               "," = "",
-                                               "\\bD[0-9]+\\b" = "",          
-                                               "\\b[0-9]+C[0-9]+\\b" = "")))
-    
-    rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("-" =  "", 
-                                      "Glycochnodeoxycholic" = "Glycochenodeoxycholic"))
-    rawData$AnalyteName <- sapply(rawData$AnalyteName, function(name) {
-      # Check if name contains parentheses
-      if (grepl("\\(", name)) {
-        name <- sub("(.*) \\((.*)\\)", "\\2-\\1", name)
-      }
-      name
-    })
-    
-    rawData$AnalyteName <- str_trim(rawData$AnalyteName)
-  }
+  rawData$AnalyteName <- 
+    str_replace(
+      string = rawData$AnalyteName,
+      pattern = "^HDCA$",  # Matches only the string "HDCA" exactly
+      replacement = "HDCA-Hyodeoxycholic acid"
+    )
+  
+  rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("Glycochnodeoxycholic" = "Glycochenodeoxycholic", 
+                                "Tauro-ursodeoxycholic" = "Tauroursodeoxycholic"))
+  
+  rawData$AnalyteName <- sapply(rawData$AnalyteName, function(name) {
+    # Check if name contains parentheses
+    if (grepl("\\(", name)) {
+      name <- sub("(.*) \\((.*)\\)", "\\2-\\1", name)
+    }
+    name
+  })
+  
+  rawData$AnalyteName <- str_trim(rawData$AnalyteName)
+  # #########xml##########
+  # if (grepl("\\.xml$", file, ignore.case = TRUE)) {
+  #   rawData$AnalyteName <-  str_trim(str_replace_all(rawData$AnalyteName, c("-D4" = " [IS]",
+  #                                               "-d5" = "[IS]",
+  #                                               "\\." = "-",
+  #                                               "_" = "-",
+  #                                               "Acid" = "acid",
+  #                                               "a-" = "alpha ",
+  #                                               "b-" = "beta ",
+  #                                               "g-" = "gamma ",
+  #                                               "," = "",
+  #                                               "\\bD[0-9]+\\b" = "",          
+  #                                               "\\b[0-9]+C[0-9]+\\b" = "")))
+  #   
+  #   rawData$AnalyteName <- 
+  #     str_replace(
+  #       string = rawData$AnalyteName,
+  #       pattern = "^HDCA$",  # Matches only the string "HDCA" exactly
+  #       replacement = "HDCA-Hyodeoxycholic acid"
+  #     )
+  # }
+  # 
+  # ######tsv#####
+  # if (grepl("\\.tsv$", file, ignore.case = TRUE)) {
+  #   rawData$AnalyteName <- str_trim(str_replace_all(rawData$AnalyteName, c("-d4" = "",
+  #                                              "\\." = "-",
+  #                                              "_" = "-",
+  #                                              "Acid" = "acid",
+  #                                              "a-" = "alpha ",
+  #                                              "b-" = "beta ",
+  #                                              "g-" = "gamma ",
+  #                                              "," = "",
+  #                                              "\\bD[0-9]+\\b" = "",          
+  #                                              "\\b[0-9]+C[0-9]+\\b" = "")))
+  #   
+  #   rawData$AnalyteName <- str_replace_all(rawData$AnalyteName, c("-" =  "", 
+  #                                     "Glycochnodeoxycholic" = "Glycochenodeoxycholic"))
+  #   rawData$AnalyteName <- sapply(rawData$AnalyteName, function(name) {
+  #     # Check if name contains parentheses
+  #     if (grepl("\\(", name)) {
+  #       name <- sub("(.*) \\((.*)\\)", "\\2-\\1", name)
+  #     }
+  #     name
+  #   })
+  #   
+  #   rawData$AnalyteName <- str_trim(rawData$AnalyteName)
+  # }
   
   #########long format###########
   rawData <- longFormat(rawData = rawData)
