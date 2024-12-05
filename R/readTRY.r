@@ -25,15 +25,15 @@
 readTRY <- function(file, optns = list()){
   
   ####read in the file####
-  if (grepl("\\.txt$", file, ignore.case = TRUE)) {
+  if (grepl("\\.txt$", tolower(file), ignore.case = TRUE)) {
     rawData <- readTXT(file)
   }
   
-  if (grepl("\\.xml$", file, ignore.case = TRUE)) {
+  if (grepl("\\.xml$", tolower(file), ignore.case = TRUE)) {
     rawData <- readXML2(file)
   }
   
-  if (grepl("\\.tsv$", file, ignore.case = TRUE)) {
+  if (grepl("\\.tsv$", tolower(file), ignore.case = TRUE)) {
     rawData <- read.delim2(file = file,
                            fileEncoding = "latin1",
                            header = TRUE,

@@ -81,7 +81,7 @@ readTXT <- function(path){
   
   ####Accuracy/Recovery[%] or % Dev#####
   #in line with reporting, needs to be 100% 
-  data$X.Dev <- data$X.Dev + 100
+  data$X.Dev <- as.numeric(data$X.Dev) + 100
   
   return(data)
 }
