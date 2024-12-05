@@ -46,6 +46,10 @@ readddhN <- function(file, optns = list()){
   ####parse####
   rawData <- parseTargetedMS(rawData = rawData, optns = optns)
   
+  ######AnalyteName#########
+  #internal standards only require [IS] confirmed by MS manager
+  rawData$AnalyteName <-  str_trim(str_replace_all(rawData$AnalyteName, c("\\+3" = " [IS]")))
+  
   #########long format###########
   rawData <- longFormat(rawData = rawData)
   
