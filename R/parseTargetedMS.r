@@ -185,6 +185,9 @@ parseTargetedMS <- function(rawData, optns = list()) {
   idx <- grep("sltr", tolower(rawData$sampleID))
   rawData$sampleType[idx] <- "sltr"
   
+  idx <- grep("vltr", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "vltr"
+  
   idx <- grep("^ltr", tolower(rawData$sampleID))
   rawData$sampleType[idx] <- "ltr"
   
@@ -197,7 +200,7 @@ parseTargetedMS <- function(rawData, optns = list()) {
   idx <- grep("^cal", tolower(rawData$sampleID))
   rawData$sampleType[idx] <- "cal"
   
-  idx <- grep("sltr|^ltr|^pqc|^qc|^cal|blank|chk|chck|check|sb", tolower(rawData$sampleID), invert = T)
+  idx <- grep("vltr|sltr|^ltr|^pqc|^qc|^cal|blank|chk|chck|check|sb", tolower(rawData$sampleID), invert = T)
   rawData$sampleType[idx] <- "sample"
   
   rawData$sampleType <- as.factor(rawData$sampleType)
