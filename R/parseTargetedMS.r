@@ -145,10 +145,10 @@ parseTargetedMS <- function(rawData, optns = list()) {
     parts <- strsplit(name, "_")[[1]]
     
     # Check if "Blank", "LTR", "QC" or "CAL" is in the split parts. this covers sltr, vltr and pqc as is 
-    if(any(grep("blank|ltr|qc|cal|chk|chck|sb", tolower(parts)))){
+    if(any(grep("blank|ltr|qc|cal|chk|chck|check|sb", tolower(parts)))){
       
       # Find the position of "Blank" or "LTR" and take the part with the number after it
-      idx <- which(grepl("blank|ltr|qc|cal|chk|chck|sb", tolower(parts)))
+      idx <- which(grepl("blank|ltr|qc|cal|chk|chck|check|sb", tolower(parts)))
       
       return(paste(parts[idx], parts[idx + 1], sep = "_"))  # Combine "Blank" or "LTR" with the next number
     } else {
