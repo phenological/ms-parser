@@ -20,6 +20,7 @@
 #' @import utils
 #' @import crayon
 #' @import stats
+#' @import readr
 #' @import stringr
 
 readBA <- function(file, optns = list()){
@@ -34,8 +35,10 @@ readBA <- function(file, optns = list()){
   }
   
   if (grepl("\\.tsv$", tolower(file), ignore.case = TRUE)) {
+    coding <- guess_encoding(file)
+    
     rawData <- read.delim2(file = file,
-                           fileEncoding = "latin1",
+                           fileEncoding = coding[[1]][1],
                            header = TRUE,
                            check.names = FALSE)
   }

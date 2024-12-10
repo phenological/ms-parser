@@ -17,6 +17,7 @@ Imports:
     data.table,
     dplyr,
     jsonlite,
+    readr,
     reshape2,
     stringr,
     utils,

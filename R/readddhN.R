@@ -23,6 +23,7 @@
 #' @import crayon
 #' @import stats
 #' @import stringr
+#' @import readr
 
 readddhN <- function(file, optns = list()){
   ####read in the file####
@@ -35,8 +36,10 @@ readddhN <- function(file, optns = list()){
   }
   
   if (grepl("\\.tsv$", tolower(file), ignore.case = TRUE)) {
+    coding <- guess_encoding(file)
+    
     rawData <- read.delim2(file = file,
-                           fileEncoding = "latin1",
+                           fileEncoding = coding[[1]][1],
                            header = TRUE,
                            check.names = FALSE)
   }

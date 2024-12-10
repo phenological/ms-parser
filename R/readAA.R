@@ -21,15 +21,17 @@
 #' @import utils
 #' @import crayon
 #' @import stats
+#' @import readr
 #' @importFrom stringr str_replace_all
 #' @importFrom reshape2 dcast
 
 readAA <- function(file, optns = list()) {
 
 ####read in the file####
+coding <- guess_encoding(file)
 
     rawData <- read.delim2(file = file,
-                           fileEncoding = "latin1",
+                           fileEncoding = coding[[1]][1],
                            header = TRUE,
                            check.names = FALSE)
 

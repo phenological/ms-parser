@@ -19,7 +19,8 @@
 #' @import utils
 #' @import crayon
 #' @import stats
-#' @import stringr 
+#' @import stringr
+#' @import readr 
 #' @importFrom reshape2 dcast
 
 readTRY <- function(file, optns = list()){
@@ -34,8 +35,10 @@ readTRY <- function(file, optns = list()){
   }
   
   if (grepl("\\.tsv$", tolower(file), ignore.case = TRUE)) {
+    coding <- guess_encoding(file)
+    
     rawData <- read.delim2(file = file,
-                           fileEncoding = "latin1",
+                           fileEncoding = coding[[1]][1],
                            header = TRUE,
                            check.names = FALSE)
   }
