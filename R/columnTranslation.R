@@ -10,7 +10,7 @@
 columnTranslation <- function(file, rawData) {
   
   # Load the JSON translation file from the package's inst/extdata folder
-  json_file <- system.file("extdata", "columnTranslation.json", package = "ms-parser")
+  json_file <- system.file("extdata", "columnTranslation.json", package = "ms.parser")
   
   # If not found (i.e., in development mode), use the relative path
   if (json_file == "") {
