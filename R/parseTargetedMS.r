@@ -145,10 +145,10 @@ parseTargetedMS <- function(rawData, optns = list()) {
     parts <- strsplit(name, "_")[[1]]
     
     # Check if "Blank", "LTR", "QC" or "CAL" is in the split parts. this covers sltr, vltr and pqc as is 
-    if(any(grep("blank|ltr|qc|cal|chk|chck|check|sb", tolower(parts)))){
+    if(any(grep("blank|ltr|qc|cal|chk|chck|check|sb|mix|test", tolower(parts)))){
       
       # Find the position of "Blank" or "LTR" and take the part with the number after it
-      idx <- which(grepl("blank|ltr|qc|cal|chk|chck|check|sb", tolower(parts)))
+      idx <- which(grepl("blank|ltr|qc|cal|chk|chck|check|sb|mix|test", tolower(parts)))
       
       return(paste(parts[idx], parts[idx + 1], sep = "_"))  # Combine "Blank" or "LTR" with the next number
     } else {
@@ -176,6 +176,9 @@ parseTargetedMS <- function(rawData, optns = list()) {
   colnames(rawData)[which(colnames(rawData) == "SampleType")] <- "sampleType"
   
   #assign correct type
+  idx <- grep("mix|test", tolower(rawData$sampleID))
+  rawData$sampleType[idx] <- "test"
+  
   idx <- grep("blank|sb", tolower(rawData$sampleID))
   rawData$sampleType[idx] <- "blank"
   
@@ -200,7 +203,7 @@ parseTargetedMS <- function(rawData, optns = list()) {
   idx <- grep("^cal", tolower(rawData$sampleID))
   rawData$sampleType[idx] <- "cal"
   
-  idx <- grep("vltr|sltr|^ltr|^pqc|^qc|^cal|blank|chk|chck|check|sb", tolower(rawData$sampleID), invert = T)
+  idx <- grep("vltr|sltr|^ltr|^pqc|^qc|^cal|blank|chk|chck|check|sb|mix|test", tolower(rawData$sampleID), invert = T)
   rawData$sampleType[idx] <- "sample"
   
   rawData$sampleType <- as.factor(rawData$sampleType)
