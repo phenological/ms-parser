@@ -6,7 +6,7 @@
 #' @return data frame in long format. "sampleID", "AnalyteName", "AnalysisName",
 #' "cohortName","projectName","sampleMatrixType", "sampleType" are still columns 
 #' but the rest are stored in paramName and paramValue.
-#' 
+#' @export
 #' @import reshape2
 
 longFormat <- function(rawData){
