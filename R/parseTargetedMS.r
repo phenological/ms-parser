@@ -18,6 +18,7 @@
 #' @import utils 
 #' @import stringr
 #' @importFrom crayon red blue yellow white green bold
+#' @export
 
 parseTargetedMS <- function(rawData, optns = list()) {
   
